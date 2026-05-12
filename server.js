@@ -22,6 +22,17 @@ const users = [
 ];
 
 const userProfiles = []; // Store user signup profiles
+const institutions = [
+  "NUML Islamabad",
+  "NUST Islamabad",
+  "FAST Islamabad",
+  "COMSATS Islamabad",
+  "Punjab University Lahore",
+  "LUMS Lahore",
+  "IBA Karachi",
+  "NED Karachi"
+];
+
 const carpools = [];
 const joinRequests = [];
 const tripAssignments = [];
@@ -256,6 +267,41 @@ const requestListener = async (req, res) => {
         details: error.message,
       });
     }
+
+    return;
+  }
+
+  /*
+  =========================================================
+   SEARCH INSTITUTIONS
+   GET /api/institutions/search?q=<query>
+  =========================================================
+  */
+  if (req.method === 'GET' && req.url.startsWith('/api/institutions/search')) {
+    const urlObj = new URL(req.url, 'http://localhost');
+    const searchQuery = urlObj.searchParams.get('q') || '';
+
+    if (!searchQuery || searchQuery.trim() === '') {
+      sendJson(res, 200, {
+        success: true,
+        query: searchQuery,
+        totalResults: 0,
+        suggestions: [],
+      });
+      return;
+    }
+
+    // Partial matching (case-insensitive)
+    const suggestions = institutions.filter((institution) =>
+      institution.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    sendJson(res, 200, {
+      success: true,
+      query: searchQuery,
+      totalResults: suggestions.length,
+      suggestions,
+    });
 
     return;
   }
@@ -1152,6 +1198,7 @@ const requestListener = async (req, res) => {
     availableRoutes: [
       'GET  /',
       'POST /api/user/signup',
+      'GET  /api/institutions/search',
       'GET  /api/carpool/list',
       'GET  /api/carpool/search',
       'GET  /api/carpool/:offerId',
