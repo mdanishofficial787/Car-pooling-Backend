@@ -8,6 +8,19 @@ const port = process.env.PORT || 5000;
  In-Memory Mock Database
 ========================================
 */
+const users = [
+  {
+    userId: 1,
+    name: "Muhammad Bilal",
+    gender: "male"
+  },
+  {
+    userId: 2,
+    name: "Ayesha",
+    gender: "female"
+  }
+];
+
 const carpools = [];
 const joinRequests = [];
 const tripAssignments = [];
@@ -270,6 +283,45 @@ const requestListener = async (req, res) => {
       success: true,
       total: activeCarpools.length,
       carpools: activeCarpools,
+    });
+
+    return;
+  }
+
+  /*
+  =========================================================
+   SEARCH CARPOOLS WITH GENDER FILTERING
+   GET /api/carpool/search
+  =========================================================
+  */
+  if (req.method === 'GET' && req.url.startsWith('/api/carpool/search')) {
+    const user = authenticateUser(req, res);
+    if (!user) return;
+
+    const visibleCarpools = carpools.filter((carpool) => {
+      // Hide female-only carpools from non-female users
+      if (
+        carpool.genderPreference === 'FEMALE_ONLY' &&
+        user.gender !== 'female'
+      ) {
+        return false;
+      }
+
+      // Hide male-only carpools from non-male users
+      if (
+        carpool.genderPreference === 'MALE_ONLY' &&
+        user.gender !== 'male'
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    sendJson(res, 200, {
+      success: true,
+      totalResults: visibleCarpools.length,
+      carpools: visibleCarpools,
     });
 
     return;
