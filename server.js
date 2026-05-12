@@ -21,6 +21,7 @@ const users = [
   }
 ];
 
+const userProfiles = []; // Store user signup profiles
 const carpools = [];
 const joinRequests = [];
 const tripAssignments = [];
@@ -165,6 +166,97 @@ const requestListener = async (req, res) => {
       version: '1.0.0',
       timestamp: new Date().toISOString(),
     });
+    return;
+  }
+
+  /*
+  =========================================================
+   USER SIGNUP
+   POST /api/user/signup
+  =========================================================
+  */
+  if (req.method === 'POST' && req.url === '/api/user/signup') {
+    try {
+      const data = await parseJsonBody(req);
+
+      // Required fields validation
+      const requiredFields = ['fullName', 'mobileNumber', 'email'];
+      const missingFields = validateFields(data, requiredFields);
+
+      if (missingFields.length > 0) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Missing required fields',
+          missingFields,
+        });
+        return;
+      }
+
+      // Check for duplicate mobile number
+      const existingUser = userProfiles.find((u) => u.mobileNumber === data.mobileNumber);
+      if (existingUser) {
+        sendJson(res, 409, {
+          success: false,
+          message: 'Mobile number already registered',
+        });
+        return;
+      }
+
+      // Validate email format (basic validation)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email)) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'Invalid email format',
+        });
+        return;
+      }
+
+      // Validate mobile number format (Pakistan format)
+      const mobileRegex = /^03\d{9}$/;
+      if (!mobileRegex.test(data.mobileNumber)) {
+        sendJson(res, 400, {
+          success: false,
+          message: 'Invalid mobile number format. Use Pakistan format: 03XXXXXXXXX',
+        });
+        return;
+      }
+
+      // Create user profile
+      const newUser = {
+        userId: userProfiles.length + 1,
+        fullName: data.fullName,
+        mobileNumber: data.mobileNumber,
+        email: data.email,
+        location: data.location || '',
+        weeklySchedule: Array.isArray(data.weeklySchedule) ? data.weeklySchedule : [],
+        institution: data.institution || '',
+        createdAt: new Date().toISOString(),
+      };
+
+      userProfiles.push(newUser);
+
+      sendJson(res, 201, {
+        success: true,
+        message: 'User profile created successfully',
+        user: {
+          userId: newUser.userId,
+          fullName: newUser.fullName,
+          mobileNumber: newUser.mobileNumber,
+          email: newUser.email,
+          location: newUser.location,
+          weeklySchedule: newUser.weeklySchedule,
+          institution: newUser.institution,
+        },
+      });
+    } catch (error) {
+      sendJson(res, 400, {
+        success: false,
+        error: 'Invalid JSON body',
+        details: error.message,
+      });
+    }
+
     return;
   }
 
@@ -1059,6 +1151,7 @@ const requestListener = async (req, res) => {
     message: 'Route not found',
     availableRoutes: [
       'GET  /',
+      'POST /api/user/signup',
       'GET  /api/carpool/list',
       'GET  /api/carpool/search',
       'GET  /api/carpool/:offerId',
