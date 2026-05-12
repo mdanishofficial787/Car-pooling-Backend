@@ -800,6 +800,67 @@ const requestListener = async (req, res) => {
 
   /*
   =========================================================
+   ADMIN DASHBOARD
+   GET /api/admin/dashboard
+  =========================================================
+  */
+  if (req.method === 'GET' && req.url.startsWith('/api/admin/dashboard')) {
+    const user = authenticateUser(req, res);
+    if (!user) return;
+
+    // Parse query parameters for date filters
+    const urlObj = new URL(req.url, 'http://localhost');
+    const startDateParam = urlObj.searchParams.get('startDate');
+    const endDateParam = urlObj.searchParams.get('endDate');
+
+    // Use provided dates or default to last 30 days
+    const endDate = endDateParam ? new Date(endDateParam) : new Date();
+    const startDate = startDateParam ? new Date(startDateParam) : new Date(new Date().setDate(endDate.getDate() - 30));
+
+    // Calculate metrics
+    const activePoolsCount = carpools.filter((c) => c.status === 'ACTIVE').length;
+    const matchedTripsCount = tripAssignments.filter(
+      (t) => t.status === 'COMPLETED' || t.status === 'IN_PROGRESS'
+    ).length;
+    const cancelledTripsCount = tripAssignments.filter((t) => t.status === 'CANCELLED').length;
+
+    // Calculate average match time (mock calculation)
+    const completedTrips = tripAssignments.filter((t) => t.status === 'COMPLETED');
+    const averageMatchTimeMinutes = completedTrips.length > 0
+      ? Math.round(completedTrips.reduce((sum, t) => sum + 6, 0) / completedTrips.length)
+      : 0;
+
+    // Safety incidents (from ratings with issues)
+    const safetyIncidentsCount = ratings.filter((r) => r.issueReported).length;
+
+    // Driver status (mock data)
+    const availableDrivers = 14;
+    const busyDrivers = 6;
+
+    sendJson(res, 200, {
+      success: true,
+      filters: {
+        startDate: startDate.toISOString().split('T')[0],
+        endDate: endDate.toISOString().split('T')[0],
+      },
+      dashboard: {
+        activePoolsCount,
+        matchedTripsCount,
+        cancelledTripsCount,
+        averageMatchTimeMinutes,
+        safetyIncidentsCount,
+        drivers: {
+          available: availableDrivers,
+          busy: busyDrivers,
+        },
+      },
+    });
+
+    return;
+  }
+
+  /*
+  =========================================================
    404 — Route Not Found
   =========================================================
   */
@@ -818,6 +879,7 @@ const requestListener = async (req, res) => {
       'POST /api/trip/end',
       'GET  /api/trip/:tripId/status',
       'GET  /api/admin/audit-logs',
+      'GET  /api/admin/dashboard',
     ],
   });
 };
