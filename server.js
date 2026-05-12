@@ -391,6 +391,82 @@ const requestListener = async (req, res) => {
 
   /*
   =========================================================
+   MATCH CARPOOLS BY TIME
+   POST /api/match/time
+  =========================================================
+  */
+  if (req.method === 'POST' && req.url === '/api/match/time') {
+    const user = authenticateUser(req, res);
+    if (!user) return;
+
+    try {
+      const data = await parseJsonBody(req);
+
+      const missingFields = validateFields(data, ['travelDate', 'departureTime']);
+      if (missingFields.length > 0) {
+        sendJson(res, 400, { success: false, error: 'Missing required fields', missingFields });
+        return;
+      }
+
+      // Validate date format
+      const travelDate = new Date(data.travelDate);
+      if (isNaN(travelDate.getTime())) {
+        sendJson(res, 400, { success: false, message: 'Invalid travelDate format. Use YYYY-MM-DD' });
+        return;
+      }
+
+      // Validate time format (HH:MM)
+      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+      if (!timeRegex.test(data.departureTime)) {
+        sendJson(res, 400, { success: false, message: 'Invalid departureTime format. Use HH:MM (24-hour)' });
+        return;
+      }
+
+      // Find matching carpools by date and time
+      const matchedByTime = carpools.filter((carpool) => {
+        const dateMatch = carpool.travelDate === data.travelDate;
+        const timeMatch = carpool.departureTime === data.departureTime;
+        
+        return dateMatch && timeMatch && carpool.status === 'ACTIVE';
+      });
+
+      // Filter by gender preference for current user
+      const visibleTimeRoutes = matchedByTime.filter((route) => {
+        if (route.genderPreference === 'FEMALE_ONLY' && user.gender !== 'female') {
+          return false;
+        }
+        if (route.genderPreference === 'MALE_ONLY' && user.gender !== 'male') {
+          return false;
+        }
+        return true;
+      });
+
+      sendJson(res, 200, {
+        success: true,
+        travelDate: data.travelDate,
+        departureTime: data.departureTime,
+        matchedCount: visibleTimeRoutes.length,
+        routes: visibleTimeRoutes.map((route) => ({
+          offerId: route.offerId,
+          driverName: route.driverName,
+          pickupLocation: route.pickupLocation,
+          destinationStation: route.destinationStation,
+          travelDate: route.travelDate,
+          departureTime: route.departureTime,
+          availableSeats: route.availableSeats,
+          genderPreference: route.genderPreference,
+          travelPreferences: route.travelPreferences,
+        })),
+      });
+    } catch (error) {
+      sendJson(res, 400, { success: false, error: 'Invalid JSON body', details: error.message });
+    }
+
+    return;
+  }
+
+  /*
+  =========================================================
    GET SINGLE CARPOOL
    GET /api/carpool/:offerId
   =========================================================
@@ -990,6 +1066,7 @@ const requestListener = async (req, res) => {
       'POST /api/carpool/join-request',
       'POST /api/carpool/join-request/:requestId/respond',
       'POST /api/match/route',
+      'POST /api/match/time',
       'POST /api/driver/assign-trip',
       'POST /api/trip/start',
       'POST /api/trip/end',
