@@ -1,0 +1,6 @@
+{
+  "booking_id": 1,
+  "payment_method": "CASH",
+  "base_fare": 500,
+  "payment_schedule": "PER_RIDE"
+}

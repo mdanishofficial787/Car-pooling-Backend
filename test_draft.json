@@ -1,0 +1,13 @@
+{
+  "pickupLocation": {
+    "latitude": 33.6844,
+    "longitude": 73.0479,
+    "area": "NUML Islamabad",
+    "street": "Main Double Road"
+  },
+  "destinationStation": "Blue Area Islamabad",
+  "travelDate": "2024-12-20",
+  "preferredTime": "09:00",
+  "genderPreference": "OPEN",
+  "basePrice": 500
+}

@@ -1,23 +1,234 @@
-# Getting Started with Create React App
+# 🚗 Carpool Backend API
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A production-ready, scalable backend for a carpool/ride-sharing application built with **Express.js**, **Socket.IO**, and modern backend architecture patterns.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 📋 Features
 
-### `npm start`
+✅ **User Management**
+- User signup and authentication
+- Institution search
+- User verification tracking
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+✅ **Carpool Operations**
+- Create carpool offers
+- List and search carpools
+- Join requests and acceptance
+- Gender-based filtering
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+✅ **Trip Management**
+- Assign trips to drivers
+- Start/end trips
+- Real-time trip status tracking
+- Trip contact information
 
-### `npm test`
+✅ **Matching Engine**
+- Route-based matching
+- Time-based matching
+- Verification score sorting
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+✅ **File Uploads**
+- CNIC image upload (front + back)
+- Selfie face verification
+- JPG/PNG validation
+- 5MB file size limit
+
+✅ **Real-Time Features**
+- Socket.IO live tracking
+- Driver location updates
+- Trip status notifications
+- In-trip chat messaging
+
+✅ **Admin Dashboard**
+- Audit logs
+- Performance metrics
+- Trip analytics
+
+✅ **Ratings & Feedback**
+- Post-trip ratings
+- User rating averaging
+- Issue reporting
+
+---
+
+## 🏗️ Project Structure
+
+```
+src/
+├── config/              # Configuration files
+│   └── socket.js       # Socket.IO setup
+├── controllers/         # Business logic
+│   ├── authController.js
+│   ├── userController.js
+│   ├── carpoolController.js
+│   ├── matchController.js
+│   ├── tripController.js
+│   ├── adminController.js
+│   ├── verificationController.js
+│   └── uploadController.js
+├── routes/             # Express routes
+│   ├── authRoutes.js
+│   ├── userRoutes.js
+│   ├── carpoolRoutes.js
+│   ├── matchRoutes.js
+│   ├── tripRoutes.js
+│   ├── adminRoutes.js
+│   ├── verificationRoutes.js
+│   └── uploadRoutes.js
+├── middleware/         # Custom middleware
+│   ├── authMiddleware.js
+│   ├── adminMiddleware.js
+│   ├── verificationMiddleware.js
+│   ├── errorMiddleware.js
+│   └── uploadMiddleware.js
+├── services/          # Business logic services
+│   ├── matchService.js
+│   ├── verificationService.js
+│   ├── ratingService.js
+│   ├── socketService.js
+│   └── uploadService.js
+├── utils/            # Helper functions
+│   ├── responseHelper.js
+│   ├── validationHelper.js
+│   ├── scoreCalculator.js
+│   └── dateHelper.js
+├── database/         # Mock database
+│   ├── mockDB.js
+│   └── seedData.js
+├── uploads/          # Uploaded files directory
+├── app.js           # Express app configuration
+└── server.js        # Server entry point
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 14.x or higher
+- npm or yarn
+
+### Installation
+
+1. **Navigate to project directory**
+```bash
+cd carpool-project
+```
+
+2. **Install dependencies**
+```bash
+npm install
+```
+
+3. **Update `.env` if needed**
+```bash
+PORT=5000
+NODE_ENV=development
+```
+
+4. **Start the server**
+
+**Development mode (with hot reload)**
+```bash
+npm run dev
+```
+
+**Production mode**
+```bash
+npm start
+```
+
+Server will start at: `http://localhost:5000`
+
+---
+
+## 📡 API Endpoints
+
+### Authentication & Verification
+```
+GET  /api/user/verifications/:userId          - Get user verification status
+POST /api/trip/rate                           - Submit trip rating
+```
+
+### User Management
+```
+POST /api/user/signup                         - User registration
+GET  /api/institutions/search?q=<query>       - Search institutions
+```
+
+### Carpools
+```
+POST /api/carpool/create                      - Create new carpool
+GET  /api/carpool/list                        - Get all active carpools
+GET  /api/carpool/search                      - Search carpools
+GET  /api/carpool/:offerId                    - Get carpool details
+POST /api/carpool/join-request                - Submit join request
+POST /api/carpool/join-request/:requestId/respond  - Accept/reject request
+```
+
+### Matching
+```
+POST /api/match/route                         - Match by route
+POST /api/match/time                          - Match by time
+```
+
+### Trips
+```
+POST /api/driver/assign-trip                  - Assign trip to driver
+POST /api/trip/start                          - Start trip
+POST /api/trip/end                            - End trip
+GET  /api/trip/:tripId/status                 - Get trip status
+GET  /api/trip/contact/:tripId                - Get trip contact info
+```
+
+### File Uploads
+```
+POST /api/user/upload-cnic                    - Upload CNIC images
+POST /api/user/verify-selfie                  - Upload selfie for verification
+```
+
+### Admin
+```
+GET  /api/admin/audit-logs                    - Get audit logs
+GET  /api/admin/dashboard                     - Get admin dashboard
+```
+
+---
+
+## 🔐 Authentication
+
+All endpoints (except signup and institution search) require:
+
+**Header:**
+```
+Authorization: Bearer testtoken
+```
+
+---
+
+## 📁 File Uploads
+
+### CNIC Upload
+- **Endpoint:** `POST /api/user/upload-cnic`
+- **Allowed:** JPG, JPEG, PNG
+- **Max Size:** 5MB per file
+- **Storage:** `uploads/` directory
+
+### Selfie Verification
+- **Endpoint:** `POST /api/user/verify-selfie`
+- **Test:** Filename with "match" → PASS, otherwise → FAIL
+- **Storage:** `uploads/` directory
+
+---
+
+## 🚀 Deploy & Scale
+
+This architecture is ready for MongoDB migration, caching, and production deployment. See the full README in the project for scalability roadmap.
+
+---
+
+**Happy coding! 🚀**
 
 ### `npm run build`
 

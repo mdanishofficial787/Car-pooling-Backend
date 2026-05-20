@@ -1,0 +1,13 @@
+{
+  "pickupLocation": {
+    "latitude": 33.7215,
+    "longitude": 73.1856,
+    "area": "Jinnah Super Market",
+    "street": "F-7 Sector"
+  },
+  "destinationStation": "Rawalpindi City Center",
+  "travelDate": "2024-12-21",
+  "preferredTime": "14:30",
+  "genderPreference": "FEMALE",
+  "basePrice": 400
+}
